@@ -1,0 +1,8 @@
+version: '2'
+services:
+  qianbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
