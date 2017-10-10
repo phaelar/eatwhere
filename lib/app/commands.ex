@@ -65,16 +65,44 @@ defmodule App.Commands do
   end
 
   command "eat" do
-    Logger.log :info, "Command /eat"
     with {:ok, response} <- HTTPoison.get(System.get_env("URL")),
-        {:ok, result} <- Poison.Parser.parse(response.body) do
-          send_message result["name"]
+    {:ok, result} <- Poison.Parser.parse(response.body) do
+      send_message result["name"],
+      reply_markup: %Model.InlineKeyboardMarkup{
+        inline_keyboard: [
+          [
+            %{
+              callback_data: "/reroll",
+              text: "Mai la...",
+            }
+          ],
+        ]
+      }
     else
       _ -> send_message "Sorry, an error occurred"
     end
   end
 
   # You can create command interfaces for callback querys using this macro.
+  callback_query_command "reroll" do
+    with {:ok, response} <- HTTPoison.get(System.get_env("URL")),
+    {:ok, result} <- Poison.Parser.parse(response.body) do
+      edit_message_reply_markup result["name"],
+      reply_markup: %Model.InlineKeyboardMarkup{
+        inline_keyboard: [
+          [
+            %{
+              callback_data: "/reroll",
+              text: "Mai la...",
+            }
+          ],
+        ]
+      }
+    else
+      _ -> send_message "Sorry, an error occurred"
+    end
+  end
+
   callback_query_command "choose" do
     Logger.log :info, "Callback Query Command /choose"
 
@@ -138,7 +166,7 @@ defmodule App.Commands do
   callback_query do
     Logger.log :warn, "Did not match any callback query"
 
-    answer_callback_query text: "Sorry, but there is no JoJo better than Joseph."
+    answer_callback_query text: "Sorry, an error has occured!"
   end
 
   # Rescues any unmatched inline query.

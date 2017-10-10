@@ -64,6 +64,12 @@ defmodule App.Commander do
     end
   end
 
+  defmacro edit_message_reply_markup(text, options \\ []) do
+    quote bind_quoted: [text: text, options: options] do
+      Nadia.edit_message_text get_chat_id(), get_message_id(), 0, text, options
+    end
+  end
+
   defmacro send_photo(photo, options \\ []) do
     quote bind_quoted: [photo: photo, options: options] do
       Nadia.send_photo get_chat_id(), photo, options
@@ -159,6 +165,16 @@ defmodule App.Commander do
         %{edited_message: %{chat: %{id: id}}} when not is_nil(id) -> 
           id
         _ -> raise "No chat id found!"
+      end
+    end
+  end
+
+  defmacro get_message_id do
+    quote do
+      case var!(update) do
+        %{callback_query: callback_query} when not is_nil(callback_query) ->
+          callback_query.message.message_id
+          _ -> raise "No message id found!"
       end
     end
   end
