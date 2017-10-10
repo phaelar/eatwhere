@@ -58,17 +58,20 @@ defmodule App.Commands do
 
   command "inspire" do
     Logger.log :info, "Command /inspire"
-    # TODO: make this functional
-    {:ok, res} = HTTPoison.get "http://inspirobot.me/api?generate=true"
-    {:ok, _} = send_message res.body
+    case HTTPoison.get "http://inspirobot.me/api?generate=true" do
+      {:ok, res} -> send_message res.body
+      {:ok, error} -> send_message "Sorry, an error occurred!"
+    end
   end
 
   command "eat" do
     Logger.log :info, "Command /eat"
-    # TODO: make this functional
-    {:ok, res} = HTTPoison.get System.get_env("URL")
-    {:ok, parsed} = Poison.Parser.parse res.body
-    {:ok, _} = send_message parsed["name"]
+    with {:ok, response} <- HTTPoison.get(System.get_env("URL")),
+        {:ok, result} <- Poison.Parser.parse(response.body) do
+          send_message result["name"]
+    else
+      _ -> send_message "Sorry, an error occurred"
+    end
   end
 
   # You can create command interfaces for callback querys using this macro.
@@ -157,9 +160,9 @@ defmodule App.Commands do
 
   # The `message` macro must come at the end since it matches anything.
   # You may use it as a fallback.
-  message do
-    Logger.log :warn, "Did not match the message"
+  # message do
+  #   Logger.log :warn, "Did not match the message"
 
-    send_message "Sorry, I couldn't understand you"
-  end
+  #   send_message "Sorry, I couldn't understand you"
+  # end
 end
