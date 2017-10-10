@@ -60,7 +60,7 @@ defmodule App.Commands do
     Logger.log :info, "Command /inspire"
     case HTTPoison.get "http://inspirobot.me/api?generate=true" do
       {:ok, res} -> send_message res.body
-      {:ok, error} -> send_message "Sorry, an error occurred!"
+      _ -> send_message "Sorry, an error occurred!"
     end
   end
 
