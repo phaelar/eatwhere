@@ -6,7 +6,9 @@ Project structure based off [lubien/elixir-telegram-bot-boilerplate](https://git
 ## Prerequisites
 - [Install Elixir](https://elixir-lang.org/install.html)
 - [Get a telegram bot token](https://core.telegram.org/bots)
+- [Get Google Places web service API token](https://developers.google.com/places/web-service/)
 - Add bot token to `.env` file
+- Add Places API key to `.env` file
 - Add _lunch qian_ API URL to `.env` file
 
 ## Running in Development

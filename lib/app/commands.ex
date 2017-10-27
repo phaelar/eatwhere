@@ -114,6 +114,22 @@ defmodule App.Commands do
     end
   end
 
+  location do
+    Logger.log :info, "Location"
+    search_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=#{update.message.location.latitude},#{update.message.location.longitude}&radius=1000&types=food&key=#{System.get_env("PLACES_API_KEY")}"
+    with {:ok, response} <- HTTPoison.get(search_url),
+      {:ok, results} <- Poison.Parser.parse(response.body) do
+      results
+      |> Map.get("results")
+      |> Enum.map(fn x -> x["name"] end)
+      |> Enum.take_random(1)
+      |> hd
+      |> send_message
+    else
+      _ -> send_message "Sorry, an error occurred"
+    end
+  end 
+
   # You may also want make commands when in inline mode.
   # Be sure to enable inline mode first: https://core.telegram.org/bots/inline
   # Try by typping "@your_bot_name /what-is something"

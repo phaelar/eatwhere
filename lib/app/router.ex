@@ -30,6 +30,16 @@ defmodule App.Router do
     end
   end
 
+  defp generate_location(handler) do
+    quote do
+      def do_match_message(%{message: %{location: loc}} = var!(update)) do
+        if not is_nil(loc) do
+          handle_message unquote(handler), [var!(update)]
+        end
+      end   
+    end
+  end
+
   defp generate_command(command, handler) do
     quote do
       def do_match_message(%{
@@ -208,6 +218,12 @@ defmodule App.Router do
   end
   defmacro callback_query_command(command, module, function) do
     generate_callback_query_command(command, {module, function})
+  end
+
+  ## Location
+
+  defmacro location(do: function) do
+    generate_location(function)
   end
 
   # Helpers
