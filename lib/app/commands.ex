@@ -103,6 +103,36 @@ defmodule App.Commands do
     end
   end
 
+  callback_query_command "reroll2" do
+    Logger.log :info, "Location callback"
+    [cb_lat, cb_lng] = update.callback_query.data |> String.slice(9..-1) |> String.split(",")
+    search_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=#{cb_lat},#{cb_lng}&radius=1000&types=food&key=#{System.get_env("PLACES_API_KEY")}"
+    with {:ok, response} <- HTTPoison.get(search_url),
+      {:ok, results} <- Poison.Parser.parse(response.body) do
+      results
+      |> Map.get("results")
+      |> Enum.take_random(1)
+      |> hd
+      |> (fn(x) -> send_venue(x["geometry"]["location"]["lat"],
+                              x["geometry"]["location"]["lng"],
+                              x["name"],
+                              x["vicinity"],
+                              reply_markup: %Model.InlineKeyboardMarkup{
+                                inline_keyboard: [
+                                  [
+                                    %{
+                                      callback_data: "/reroll2 #{cb_lat},#{cb_lng}",
+                                      text: "Mai la...",
+                                    }
+                                  ],
+                                ]
+                              })
+          end).()
+    else
+      _ -> send_message "Sorry, an error occurred!"
+    end
+  end
+
   callback_query_command "choose" do
     Logger.log :info, "Callback Query Command /choose"
 
@@ -123,7 +153,21 @@ defmodule App.Commands do
       |> Map.get("results")
       |> Enum.take_random(1)
       |> hd
-      |> (fn(x) -> send_venue(x["geometry"]["location"]["lat"], x["geometry"]["location"]["lng"], x["name"], x["vicinity"]) end).()
+      |> (fn(x) -> send_venue(x["geometry"]["location"]["lat"],
+                              x["geometry"]["location"]["lng"],
+                              x["name"],
+                              x["vicinity"],
+                              reply_markup: %Model.InlineKeyboardMarkup{
+                                inline_keyboard: [
+                                  [
+                                    %{
+                                      callback_data: "/reroll2 #{update.message.location.latitude},#{update.message.location.longitude}",
+                                      text: "Mai la...",
+                                    }
+                                  ],
+                                ]
+                              })
+          end).()
     else
       _ -> send_message "Sorry, an error occurred!"
     end
