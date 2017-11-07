@@ -121,12 +121,11 @@ defmodule App.Commands do
       {:ok, results} <- Poison.Parser.parse(response.body) do
       results
       |> Map.get("results")
-      |> Enum.map(fn x -> x["name"] end)
       |> Enum.take_random(1)
       |> hd
-      |> send_message
+      |> (fn(x) -> send_venue(x["geometry"]["location"]["lat"], x["geometry"]["location"]["lng"], x["name"], x["vicinity"]) end).()
     else
-      _ -> send_message "Sorry, an error occurred"
+      _ -> send_message "Sorry, an error occurred!"
     end
   end 
 
